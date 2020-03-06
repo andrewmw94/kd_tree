@@ -10,34 +10,53 @@ package kd_tree;
  * @author awells
  */
 public class KDTreeNode {
+
     final int max_bucket_size = 20;
     PointEntry[] list_of_points;
     int divider_dimension;
     double divider_value;
+    KDTreeNode leftChild;
+    KDTreeNode rightChild;
     double[][] bounding_box;//[dimension][0] = min; [dimension][1] = max
-    boolean is_leaf_node;  
-    
-    
+    boolean is_leaf_node;
+
     private int last_point_index;
-    
+
     public KDTreeNode(int dimension) {
         bounding_box = new double[dimension][2];
         last_point_index = 0;
         is_leaf_node = true;
         divider_dimension = -1;
-        list_of_points = new PointEntry[max_bucket_size];
+        list_of_points = new PointEntry[max_bucket_size+1];
+        leftChild = null;
+        rightChild = null;
     }
-    
-    
+
     public void add_point(PointEntry p) {
-        if(last_point_index < max_bucket_size) {
-            list_of_points[last_point_index] = p;
-            last_point_index++;
+        if (is_leaf_node) {
+            //if a leaf node can fit the point, just add to the list
+            if (last_point_index < max_bucket_size) {
+                list_of_points[last_point_index] = p;
+                last_point_index++;
+            } else {
+                //split the node if it is too big
+            }
+        } else {
+            //if it's not a leaf node, go to the correct child
+            if (p.pointCoordinates[divider_dimension] > divider_value) {
+                rightChild.add_point(p);
+            } else {
+                leftChild.add_point(p);
+            }
         }
     }
-    
+
     public int getLastPointIndex() {
         return last_point_index;
+    }
+
+    public void setLastPointIndex(int index) {
+        last_point_index = index;
     }
 
 }

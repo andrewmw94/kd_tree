@@ -19,9 +19,7 @@ public class Kd_tree {
 
     public void addPoint(PointEntry p) {
         KDTreeNode curr_node = root_node;
-        if (curr_node.is_leaf_node) {
-            curr_node.add_point(p);
-        }
+        curr_node.add_point(p);
     }
 
     public PointEntry getNearestPoint(PointEntry p) {
@@ -40,6 +38,8 @@ public class Kd_tree {
                 }
             }
             return best_point;
+        } else {
+
         }
 
         double[] arr = {0.0, 0.0};
@@ -58,7 +58,5 @@ public class Kd_tree {
         }
         return sum;
     }
-
-
 
 }
