@@ -27,7 +27,7 @@ public class KDTreeNode {
         last_point_index = 0;
         is_leaf_node = true;
         divider_dimension = -1;
-        list_of_points = new PointEntry[max_bucket_size+1];
+        list_of_points = new PointEntry[max_bucket_size + 1];
         leftChild = null;
         rightChild = null;
     }
@@ -40,6 +40,22 @@ public class KDTreeNode {
                 last_point_index++;
             } else {
                 //split the node if it is too big
+                int split_dimension = 0;
+                double max_dimension_range = 0;
+                for (int i = 0; i < bounding_box.length; i++) {
+                    double[] min_max = bounding_box[i];
+                    double range = min_max[1] - min_max[0];
+                    if (range > max_dimension_range) {
+                        split_dimension = i;
+                        max_dimension_range = range;
+                    }
+                }
+                double split_value = 0;
+                //TODO: improve this by using the median or some approximation
+                split_value = (bounding_box[split_dimension][0] + bounding_box[split_dimension][1]) / 2;
+
+                split(split_dimension, split_value);
+
             }
         } else {
             //if it's not a leaf node, go to the correct child
@@ -47,6 +63,40 @@ public class KDTreeNode {
                 rightChild.add_point(p);
             } else {
                 leftChild.add_point(p);
+            }
+        }
+        updateBoundingBox(p);
+    }
+
+    private void split(int dimension, double value) {
+        assert is_leaf_node;//Throw error if not a leaf node
+
+        leftChild = new KDTreeNode(bounding_box.length);
+        rightChild = new KDTreeNode(bounding_box.length);
+
+        for (int i = 0; i < last_point_index; i++) {
+            PointEntry p = list_of_points[i];
+            if (p.pointCoordinates[dimension] > value) {
+                rightChild.add_point(p);
+            } else {
+                leftChild.add_point(p);
+            }
+        }
+
+
+        is_leaf_node = false;
+        last_point_index = 0;
+        list_of_points = null;
+        divider_dimension = dimension;
+        divider_value = value;
+    }
+
+    private void updateBoundingBox(PointEntry p) {
+        for (int i = 0; i < bounding_box.length; i++) {
+            if (p.pointCoordinates[i] < bounding_box[i][0]) {
+                bounding_box[i][0] = p.pointCoordinates[i];
+            } else if (p.pointCoordinates[i] > bounding_box[i][1]) {
+                bounding_box[i][1] = p.pointCoordinates[i];
             }
         }
     }
