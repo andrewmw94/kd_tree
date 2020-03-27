@@ -26,20 +26,28 @@ public class TreeTesterClass {
 //        arr2 = new double[]{0.0};
 //        point = new PointEntry(arr, arr2);
 //        my_tree.addPoint(point);
+        long start_time = System.nanoTime();
 
-        int point_count = 100;
+        int point_count = 10000;
         for (int i = 0; i < point_count; i++) {
-            double [] arr = new double[]{Math.random(), Math.random()};
-            double [] arr2 = new double[]{i};
+            double[] arr = new double[]{Math.random(), Math.random()};
+            double[] arr2 = new double[]{i};
             PointEntry point = new PointEntry(arr, arr2);
             my_tree.addPoint(point);
         }
 
-        double [] arr = new double[]{0.0, 0.0};
-        double [] arr2 = new double[]{0.0};
-        PointEntry point = new PointEntry(arr, arr2);
-        PointEntry nearest_p = my_tree.getNearestPoint(point);
+        System.out.println("Building the tree took: " + (System.nanoTime() - start_time) / 1e9 + " seconds");
 
-        System.out.println("The nearest point is: " + nearest_p);
+        start_time = System.nanoTime();
+        int search_point_count = 10000;
+        for (int i = 0; i < search_point_count; i++) {
+            double[] arr = new double[]{Math.random(), Math.random()};
+            double[] arr2 = new double[]{i};
+            PointEntry point = new PointEntry(arr, arr2);
+            my_tree.getNearestPoint(point);
+        }
+        System.out.println("Searching the tree took: " + (System.nanoTime() - start_time) / 1e9 + " seconds");
+
+//        System.out.println("The nearest point is: " + nearest_p);
     }
 }

@@ -19,7 +19,6 @@ public class KDTreeNode {
     KDTreeNode rightChild;
     double[][] bounding_box;//[dimension][0] = min; [dimension][1] = max
     boolean is_leaf_node;
-
     private int last_point_index;
 
     public KDTreeNode(int dimension) {
@@ -30,6 +29,47 @@ public class KDTreeNode {
         list_of_points = new PointEntry[max_bucket_size + 1];
         leftChild = null;
         rightChild = null;
+    }
+
+    //Get closest point. Return null if point is greater than best_distance away
+    public PointEntry get_nearest_point(PointEntry p, double best_distance) {
+        //Make sure this node could have a closer point
+        if (best_distance < distanceSquaredToBox(p, bounding_box)) {
+            return null;
+        }
+        
+        if (is_leaf_node) {
+            PointEntry best_p = null;
+            for (int i = 0; i < last_point_index; i++) {
+                if (distanceSquared(p, list_of_points[i]) < best_distance) {
+                    best_distance = distanceSquared(p, list_of_points[i]);
+                    best_p = list_of_points[i];
+                }
+            }
+            return best_p;
+        } else {
+            KDTreeNode good_child = null;
+            KDTreeNode bad_child = null;
+            if (divider_value < p.pointCoordinates[divider_dimension]) {
+                good_child = rightChild;
+                bad_child = leftChild;
+            } else {
+                good_child = leftChild;
+                bad_child = rightChild;
+            }
+            PointEntry p1 = good_child.get_nearest_point(p, best_distance);//Get nearest child in the right tree
+            if (p1 != null) {
+                double d = distanceSquared(p, p1); //Get distance to this child
+                PointEntry p2 = bad_child.get_nearest_point(p, d);
+                if (p2 != null) {
+                    return p2;
+                } else {
+                    return p1;
+                }
+            } else {
+                return bad_child.get_nearest_point(p, best_distance);
+            }
+        }
     }
 
     public void add_point(PointEntry p) {
@@ -83,7 +123,6 @@ public class KDTreeNode {
             }
         }
 
-
         is_leaf_node = false;
         last_point_index = 0;
         list_of_points = null;
@@ -107,6 +146,30 @@ public class KDTreeNode {
 
     public void setLastPointIndex(int index) {
         last_point_index = index;
+    }
+
+    //We use the squared distance because we only care about the relative distances between pairs of points
+    private double distanceSquared(PointEntry p1, PointEntry p2) {
+        double sum = 0.0;
+        for (int i = 0; i < p1.pointCoordinates.length; i++) {
+            sum += (p1.pointCoordinates[i] - p2.pointCoordinates[i]) * (p1.pointCoordinates[i] - p2.pointCoordinates[i]);
+        }
+        return sum;
+    }
+
+    //We use the squared distance because we only care about the relative distances between pairs of points
+    private double distanceSquaredToBox(PointEntry p, double[][] box) {
+        double sum = 0.0;
+        for (int i = 0; i < p.pointCoordinates.length; i++) {
+            if (p.pointCoordinates[i] < box[i][0]) {
+                sum += (p.pointCoordinates[i] - box[i][0]) * (p.pointCoordinates[i] - box[i][0]);
+            } else if (p.pointCoordinates[i] > box[i][1]) {
+                sum += (p.pointCoordinates[i] - box[i][1]) * (p.pointCoordinates[i] - box[i][1]);
+            } else {
+                sum += 0;
+            }
+        }
+        return sum;
     }
 
 }
