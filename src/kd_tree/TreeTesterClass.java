@@ -44,7 +44,8 @@ public class TreeTesterClass {
             double[] arr = new double[]{Math.random(), Math.random()};
             double[] arr2 = new double[]{i};
             PointEntry point = new PointEntry(arr, arr2);
-            my_tree.getNearestPoint(point);
+//            my_tree.getNearestPoint(point);
+            my_tree.getKNearestPoints(point, 30);
         }
         System.out.println("Searching the tree took: " + (System.nanoTime() - start_time) / 1e9 + " seconds");
 

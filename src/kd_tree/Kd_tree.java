@@ -5,6 +5,8 @@
  */
 package kd_tree;
 
+import java.util.PriorityQueue;
+
 /**
  *
  * @author awells
@@ -24,6 +26,10 @@ public class Kd_tree {
 
     public PointEntry getNearestPoint(PointEntry p) {
         return root_node.get_nearest_point(p, Double.POSITIVE_INFINITY);
+    }
+    
+    public PriorityQueue<PointEntryComparator> getKNearestPoints(PointEntry p, int k) {
+        return root_node.get_k_nearest_points(p, k);
     }
 
     //We use the squared distance because we only care about the relative distances between pairs of points

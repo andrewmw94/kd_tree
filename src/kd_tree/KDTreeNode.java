@@ -5,6 +5,8 @@
  */
 package kd_tree;
 
+import java.util.PriorityQueue;
+
 /**
  *
  * @author awells
@@ -37,7 +39,7 @@ public class KDTreeNode {
         if (best_distance < distanceSquaredToBox(p, bounding_box)) {
             return null;
         }
-        
+
         if (is_leaf_node) {
             PointEntry best_p = null;
             for (int i = 0; i < last_point_index; i++) {
@@ -72,6 +74,55 @@ public class KDTreeNode {
         }
     }
 
+    public PriorityQueue<PointEntryComparator> get_k_nearest_points(PointEntry p, int k) {
+        PriorityQueue<PointEntryComparator> closest_points = new PriorityQueue<>(k);
+
+        double[] coordinates;
+        coordinates = new double[p.pointCoordinates.length];
+        for (int i = 0; i < p.pointCoordinates.length; i++) {
+            coordinates[i] = 0.0;
+        }
+
+        for (int i = 0; i < k; i++) {
+            PointEntry p1 = new PointEntry(coordinates.clone(), new double[]{0.0});
+            closest_points.add(new PointEntryComparator(p, p1, Double.MAX_VALUE));
+        }
+
+        get_k_nearest_points(p, closest_points);
+
+        return closest_points;
+
+    }
+
+    //Get closest point. Return null if point is greater than best_distance away
+    private void get_k_nearest_points(PointEntry p, PriorityQueue<PointEntryComparator> closest_points) {
+        //Make sure this node could have a closer point
+        if (closest_points.peek().dist_squared < distanceSquaredToBox(p, bounding_box)) {
+            return;
+        }
+        if (is_leaf_node) {
+            PointEntry best_p = null;
+            for (int i = 0; i < last_point_index; i++) {
+                if (distanceSquared(p, list_of_points[i]) < closest_points.peek().dist_squared) {
+                    closest_points.add(new PointEntryComparator(p, list_of_points[i], distanceSquared(p, list_of_points[i])));
+                }
+            }
+            return;
+        } else {
+            KDTreeNode good_child = null;
+            KDTreeNode bad_child = null;
+            if (divider_value < p.pointCoordinates[divider_dimension]) {
+                good_child = rightChild;
+                bad_child = leftChild;
+            } else {
+                good_child = leftChild;
+                bad_child = rightChild;
+            }
+            good_child.get_k_nearest_points(p, closest_points);
+            bad_child.get_k_nearest_points(p, closest_points);
+        }
+    }
+
     public void add_point(PointEntry p) {
         if (is_leaf_node) {
             //if a leaf node can fit the point, just add to the list
@@ -94,7 +145,11 @@ public class KDTreeNode {
                 //TODO: improve this by using the median or some approximation
                 split_value = (bounding_box[split_dimension][0] + bounding_box[split_dimension][1]) / 2;
 
-                split(split_dimension, split_value);
+                double v1 = list_of_points[last_point_index / 2].pointCoordinates[split_dimension];
+                double v2 = list_of_points[last_point_index - 1].pointCoordinates[split_dimension];
+                double v3 = list_of_points[0].pointCoordinates[split_dimension];
+
+                split(split_dimension, getMedian(v1, v2, v3));
 
             }
         } else {
@@ -170,6 +225,30 @@ public class KDTreeNode {
             }
         }
         return sum;
+    }
+
+    private double getMedian(double v1, double v2, double v3) {
+        if (v1 > v2) {
+            if (v1 > v3) {
+                if (v3 > v2) {
+                    return v2;
+                } else {
+                    return v3;
+                }
+            } else {
+                return v1;
+            }
+        } else {
+            if (v2 > v3) {
+                if (v3 > v1) {
+                    return v3;
+                } else {
+                    return v1;
+                }
+            } else {
+                return v2;
+            }
+        }
     }
 
 }
